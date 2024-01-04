@@ -1,56 +1,54 @@
 const express = require("express");
-const { UserModel } = require("../model/user.model");
+const { UserModel } = require("../models/user.model");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+
+
 const userRouter = express.Router();
 
-userRouter.post("/register", (req, res) => {
-  const { name, email, password, avatar } = req.body;
-  try {
-    bcrypt.hash(password, 5, async (err, hash) => {
-      if (err) {
-        res.status(200).send({ msg: "not able to generate hash", error: err });
-      } else {
-        const user = new UserModel({
-          name,
-          email,
-          password: hash,
-          avatar
-        });
-        await user.save();
-        res
-          .status(200)
-          .send({ msg: "The new user has been registerd", new_user: req.body });
-      }
-    });
-  } catch (error) {
-    res.status(400).send({ error: error });
-  }
-});
+userRouter.post("/register",async(req,res)=>{
 
-userRouter.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await UserModel.findOne({ email });
-    if (user) {
-      bcrypt.compare(password, user.password, function (err, result) {
-        if (result) {
-          const token = jwt.sign({course: "revision"} , "masai" , {expiresIn : "1hr"})
-          res.status(200).send({ msg: "Login Sucessfull!" , "token": token});
-        } else {
-          res.status(200).send({ msg: "Wrong Credentials" });
+    const {email,password} = req.body
+    try {
+        const user = await UserModel.findOne({email});
+
+        if(user){
+            return res.status(201).send({message:`${email} is already register login please`})
         }
-      });
-    } else {
-      res.status(200).send({ msg: "User does not exist" });
+        else{
+            const hashpass= bcrypt.hashSync(password,5);
+            const newUser = new UserModel({
+                ...req.body,
+                password:hashpass
+            })
+            await newUser.save();
+            return res.status(201).send({message:"New user has been registered ","New_User":newUser})
+        }
+        
+    } catch (error) {
+        return res.status(400).send({message:error.message})
     }
-  } catch (error) {
-    res.status(400).send({ error: error });
-  }
 });
 
+userRouter.post("/login",async(req,res)=>{
+    const {email, password} = req.body;
 
 
-
-module.exports = { userRouter };
- 
+    try {
+    
+        const user = await UserModel.findOne({email});
+        if(user){
+            bcrypt.compare(password,user.password, (err,result)=>{
+                if(result){
+                    const token = jwt.sign({couse:"RM101"},"masai");
+                    return res.status(201).send({message:"User has been loged in successful!", "token":token});
+                }
+                else return res.status(400).send({message:"Password not match"})
+            })
+        }
+    } catch (error) {
+        res.status(400).send({message:error.message})
+        
+    }
+})
+module.exports ={userRouter}

@@ -1,5 +1,4 @@
-
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
     name : String ,
@@ -11,7 +10,7 @@ const userSchema = new mongoose.Schema({
     versionKey: false
 });
 
-const UserModel = mongoose.model("user", userSchema);
-module.exports = {
-    UserModel
-}
+
+const UserModel = mongoose.model("user",userSchema)
+
+module.exports = { UserModel }
