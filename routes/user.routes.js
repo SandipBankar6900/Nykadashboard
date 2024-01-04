@@ -18,7 +18,7 @@ userRouter.post("/register",async(req,res)=>{
         else{
             const hashpass= bcrypt.hashSync(password,5);
             const newUser = new UserModel({
-                ...req.body,
+            
                 name,
                 email,
                 password:hashpass,
@@ -33,8 +33,8 @@ userRouter.post("/register",async(req,res)=>{
     }
 });
 
-userRouter.post("/login",async(req,res)=ls>{
-    const {email, password} = req.body;
+userRouter.post("/login",async(req,res)=>{
+    const {email,password} = req.body;
 
 
     try {
