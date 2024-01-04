@@ -8,7 +8,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register",async(req,res)=>{
 
-    const {email,password} = req.body
+    const {name,email,password,avatar} = req.body
     try {
         const user = await UserModel.findOne({email});
 
@@ -19,7 +19,10 @@ userRouter.post("/register",async(req,res)=>{
             const hashpass= bcrypt.hashSync(password,5);
             const newUser = new UserModel({
                 ...req.body,
-                password:hashpass
+                name,
+                email,
+                password:hashpass,
+                avatar
             })
             await newUser.save();
             return res.status(201).send({message:"New user has been registered ","New_User":newUser})
@@ -30,7 +33,7 @@ userRouter.post("/register",async(req,res)=>{
     }
 });
 
-userRouter.post("/login",async(req,res)=>{
+userRouter.post("/login",async(req,res)=ls>{
     const {email, password} = req.body;
 
 
