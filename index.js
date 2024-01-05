@@ -1,22 +1,22 @@
 const express = require("express");
-require("dotenv").config();
-const { connection } = require("./connection/dbconnection");
+require('dotenv').config()
+const app = express();
+const cors = require("cors");
+app.use(cors());
+app.use(express.json());
+const { connection } = require("./db");
 const { userRouter } = require("./routes/user.routes");
 const { productRouter } = require("./routes/product.routes");
-const errorHandler = require("./middleware/error.middleware");
 
-const app = express();
+app.use("/user", userRouter)
 
-app.use(express.json());
-app.use(errorHandler)
-app.use("/api",userRouter,productRouter)
+app.use("/api", productRouter)
 
-app.listen(process.env.PORT, async()=>{
+app.listen(process.env.PORT, async () => {
     try {
-        await connection;
-        console.log('server is connected to database')
-        console.log(`server is running at port ${process.env.PORT}`)
+        await connection
+        console.log(`server is running at ${process.env.PORT}`)
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 })

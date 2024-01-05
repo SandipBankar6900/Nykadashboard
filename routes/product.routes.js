@@ -1,65 +1,64 @@
 const express = require("express");
-const { ProductModel } = require("../models/product.model");
+const { ProductModel  } =  require("../model/product.model.js");
+const { auth } =  require("../middleware/auth.middleware.js");
 
 const productRouter = express.Router();
 
-productRouter.get("/products",async(req,res)=>{
-
-    try {
-        const product = await ProductModel.find();
-
-        return res.status(200).send(product)
-    } catch (error) {
-        return res.status(400).send({message:error.message})
-        
-    }
+productRouter.get("/products", async(req, res) => {
+    const data = await ProductModel.find();
+  res.status(200).send(data);
 });
 
-productRouter.get("/products/:id",async(req,res)=>{
-    const {id} = req.params;
-    try {
-        const product = await ProductModel.find({_id:id});
 
-        return res.status(200).send(product)
+productRouter.get("/products/:id?", async (req, res) => {
+    const { id } = req.params;
+    try {
+      if (id) {
+        const product = await ProductModel.findOne({ _id: id });
+        if (!product) {
+          return res.status(404).send({ msg: "Product not found" });
+        }
+       
+      } else {
+        return res.status(200).send(product);
+      }
     } catch (error) {
-        return res.status(400).send({message:error.message})
-        
+      res.status(400).send({ error: error.message });
     }
+  });
+
+
+
+productRouter.post("/products/add", auth, (req, res) => {
+  try {
+    const newProduct = new ProductModel(req.body);
+    newProduct.save();
+    res.status(200).send({ msg: "product added" });
+  } catch (error) {
+    res.status(400).send({ error: error });
+  }
 });
 
-productRouter.post("/products",async(req,res)=>{
-    
+
+productRouter.patch("/products/update/:id", async (req, res) => {
+    let { id } = req.params;
     try {
-        const product =new ProductModel(req.body);
-        await product.save()
-        return res.status(201).send({message:"New Product has been added in store","product":product})
-    } catch (error) {
-        return res.status(400).send({message:error.message})
-        
+        await ProductModel.findByIdAndUpdate({ _id: id }, req.body);
+        res.status(200).send({"msg":`the product with id:${id} has been updated`})
+    } catch (err) {
+        res.status(400).send({ "error": err.message })
     }
-});
+})
 
-productRouter.patch("/products/:id",async(req,res)=>{
-    const {id} = req.params;
 
+productRouter.delete("/products/delete/:id", async (req, res) => {
+    let { id } = req.params;
     try {
-        await ProductModel.findByIdAndUpdate({_id:id},req.body)
-        res.status(204).send({message:"product has been updated"})
-    } catch (error) {
-        return res.status(400).send({message:error.message})
-        
+        await ProductModel.findByIdAndDelete({ _id: id } ); 
+        res.status(200).send({"msg":`the product with id:${id} has been deleted`})
+    } catch (err) {
+        res.status(400).send({ "error": err.message })
     }
-});
+})
 
-productRouter.delete("/products/:id",async(req,res)=>{
-    const {id} = req.params;
-
-    try {
-        await ProductModel.findByIdAndDelete({_id:id})
-        res.status(202).send({message:"product has been deleted"})
-    } catch (error) {
-        return res.status(400).send({message:error.message})
-        
-    }
-});
-module.exports ={productRouter}
+module.exports = { productRouter };
